@@ -9,7 +9,17 @@ public class node_color_sorter {
     public node_color_sorter(int[][] graph, int numColors) {
         this.graph = graph;
         this.numVertices = graph.length;
-        this.colors = new int[numVertices];
+        this.setColors(new int[numVertices]);
+    }
+
+    public int[] getColors() {
+        return colors;
+        
+    }
+
+    public void setColors(int[] colors) {
+        this.colors = colors;
+        
     }
 
     public boolean solve(int numColors) {
@@ -20,7 +30,7 @@ public class node_color_sorter {
 
         System.out.println("Solution Exists: the Following are the colors:");
         for (int i = 0; i < numVertices; i++) {
-            System.out.println("Node " + i + " --> Color " + colors[i]);
+            System.out.println("Node " + i + " --> Color " + getColors()[i]);
         }
         return true;
     }
@@ -32,13 +42,13 @@ public class node_color_sorter {
 
         for (int c = 1; c <= numColors; c++) {
             if (isSafe(vertex, c)) {
-                colors[vertex] = c;
+                getColors()[vertex] = c;
 
                 if (colorGraph(vertex + 1, numColors)) {
                     return true;
                 }
 
-                colors[vertex] = 0; // Backtrack
+                getColors()[vertex] = 0; // Backtrack
             }
         }
 
@@ -47,7 +57,7 @@ public class node_color_sorter {
 
     private boolean isSafe(int vertex, int c) { // makes sure that adjacent nodes arents the same color
         for (int i = 0; i < numVertices; i++) {
-            if (graph[vertex][i] == 1 && colors[i] == c) {
+            if (graph[vertex][i] == 1 && getColors()[i] == c) {
                 return false;
             }
         }
