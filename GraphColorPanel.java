@@ -60,6 +60,10 @@ public class GraphColorPanel extends JPanel {
                     graph[i][j] = Character.getNumericValue(row.charAt(j));
                 }
             }
+
+            if(!node_color_sorter.isValidGraph(graph)) {
+                throw new Exception("Invalid Graph: the adjacency matrix is not symmetric ");
+            }
     
             node_color_sorter sorter = new node_color_sorter(graph, colors);
             resultArea.setText("");
