@@ -13,29 +13,60 @@ public class GraphColorPanel extends JPanel {
     public GraphColorPanel() {
         setLayout(new BorderLayout());
 
+        // Set the font for all components
+        Font font = new Font("Arial", Font.PLAIN, 14);
+
         // Top inputs
         JPanel inputPanel = new JPanel(new GridLayout(3, 2));
-        inputPanel.add(new JLabel("Number of Nodes:"));
+        JLabel nodeLabel = new JLabel("Number of Nodes:");
+        nodeLabel.setFont(font); // Apply font to labels
+        inputPanel.add(nodeLabel);
         nodeField = new JTextField();
+        nodeField.setFont(font); // Apply font to text fields
         inputPanel.add(nodeField);
 
-        inputPanel.add(new JLabel("Number of Colors:"));
+        JLabel colorLabel = new JLabel("Number of Colors:");
+        colorLabel.setFont(font); // Apply font to labels
+        inputPanel.add(colorLabel);
         colorField = new JTextField();
+        colorField.setFont(font); // Apply font to text fields
         inputPanel.add(colorField);
 
-        inputPanel.add(new JLabel("Adjacency Matrix (rows separated by newlines):"));
+        JLabel matrixLabel = new JLabel("Adjacency Matrix:");
+        matrixLabel.setFont(font); // Apply font to labels
+        inputPanel.add(matrixLabel);
         matrixInput = new JTextArea(5, 20);
+        matrixInput.setFont(font); // Apply font to text areas
         inputPanel.add(new JScrollPane(matrixInput));
 
         add(inputPanel, BorderLayout.NORTH);
 
         // Button
-        JButton solveButton = new JButton("Color Graph");
+        JButton solveButton = new JButton("Solve");
+        solveButton.setFont(font); // Apply font to button
+        solveButton.setPreferredSize(new Dimension(200, 40));
+        solveButton.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+        solveButton.setBackground(new Color(100, 150, 255)); // Light Blue
+        solveButton.setForeground(Color.WHITE);
+        solveButton.setBorder(BorderFactory.createLineBorder(new Color(60, 90, 150), 2));
+        
+        // Add hover effect
+        solveButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                solveButton.setBackground(new Color(80, 120, 255)); // Slightly darker blue on hover
+            }
+
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                solveButton.setBackground(new Color(100, 150, 255)); // Original color when not hovered
+            }
+        });
+
         add(solveButton, BorderLayout.CENTER);
 
         // Result display
         resultArea = new JTextArea(10, 30);
         resultArea.setEditable(false);
+        resultArea.setFont(font); // Apply font to text area
         add(new JScrollPane(resultArea), BorderLayout.SOUTH);
 
         // Action listener
