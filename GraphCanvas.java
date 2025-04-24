@@ -25,6 +25,9 @@ public class GraphCanvas extends JPanel {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 
+        Graphics2D g2 = (Graphics2D) g;
+        g2.setFont(new Font("Arial", Font.PLAIN, 14)); // Set font to Arial
+
         int n = graph.length;
         int radius = 20;
         int centerX = getWidth() / 2;
@@ -41,14 +44,15 @@ public class GraphCanvas extends JPanel {
         }
 
         // Draw edges
-        g.setColor(Color.BLACK);
-        for (int i = 0; i < n; i++) {
-            for (int j = i + 1; j < n; j++) {
-                if (graph[i][j] == 1) {
-                    g.drawLine(nodePositions[i].x, nodePositions[i].y, nodePositions[j].x, nodePositions[j].y);
-                }
+    g2.setStroke(new BasicStroke(1.25f)); // Set line thickness
+    g.setColor(Color.BLACK);
+    for (int i = 0; i < n; i++) {
+        for (int j = i + 1; j < n; j++) {
+            if (graph[i][j] == 1) {
+                g.drawLine(nodePositions[i].x, nodePositions[i].y, nodePositions[j].x, nodePositions[j].y);
             }
         }
+    }
 
         // Draw nodes with assigned colors
         for (int i = 0; i < n; i++) {

@@ -2,6 +2,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 public class GraphColorPanel extends JPanel {
 
@@ -13,76 +15,82 @@ public class GraphColorPanel extends JPanel {
     public GraphColorPanel() {
         setLayout(new BorderLayout());
 
-        // Set the font for all components
-        Font font = new Font("Arial", Font.PLAIN, 14);
-
         // Top inputs
-        JPanel inputPanel = new JPanel(new GridLayout(3, 2));
-        JLabel nodeLabel = new JLabel("Number of Nodes:");
-        nodeLabel.setFont(font); // Apply font to labels
-        inputPanel.add(nodeLabel);
-        nodeField = new JTextField();
-        nodeField.setFont(font); // Apply font to text fields
-        inputPanel.add(nodeField);
+        JPanel inputPanel = new JPanel();
+        inputPanel.setLayout(new BoxLayout(inputPanel, BoxLayout.Y_AXIS)); // Use vertical layout for inputs
+        inputPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10)); // Padding around the panel
 
-        JLabel colorLabel = new JLabel("Number of Colors:");
-        colorLabel.setFont(font); // Apply font to labels
-        inputPanel.add(colorLabel);
-        colorField = new JTextField();
-        colorField.setFont(font); // Apply font to text fields
-        inputPanel.add(colorField);
+        // Node field
+        JPanel nodePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        nodePanel.add(new JLabel("Number of Nodes:"));
+        nodeField = new JTextField(10);
+        nodeField.setToolTipText("Enter the number of nodes in the graph");
+        nodeField.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
+        nodePanel.add(nodeField);
+        inputPanel.add(nodePanel);
 
-        JLabel matrixLabel = new JLabel("Adjacency Matrix:");
-        matrixLabel.setFont(font); // Apply font to labels
-        inputPanel.add(matrixLabel);
+        // Color field
+        JPanel colorPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        colorPanel.add(new JLabel("Number of Colors:"));
+        colorField = new JTextField(10);
+        colorField.setToolTipText("Enter the number of colors to be used for the nodes");
+        colorField.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
+        colorPanel.add(colorField);
+        inputPanel.add(colorPanel);
+
+        // Matrix input
+        JPanel matrixPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        matrixPanel.add(new JLabel("Adjacency Matrix:"));
         matrixInput = new JTextArea(5, 20);
-        matrixInput.setFont(font); // Apply font to text areas
-        inputPanel.add(new JScrollPane(matrixInput));
+        matrixInput.setToolTipText("Enter the adjacency matrix for the graph (each row on a new line)");
+        matrixInput.setBorder(BorderFactory.createLineBorder(Color.GRAY, 1));
+        matrixPanel.add(new JScrollPane(matrixInput));
+        inputPanel.add(matrixPanel);
 
+        // Add the inputPanel to the top part
         add(inputPanel, BorderLayout.NORTH);
 
-        // Button
+        // Solve Button
         JButton solveButton = new JButton("Solve");
-        solveButton.setFont(font); // Apply font to button
-        solveButton.setPreferredSize(new Dimension(200, 40));
-        solveButton.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
-        solveButton.setBackground(new Color(100, 150, 255)); // Light Blue
-        solveButton.setForeground(Color.WHITE);
-        solveButton.setBorder(BorderFactory.createLineBorder(new Color(60, 90, 150), 2));
-        
-        // Add hover effect
-        solveButton.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
-                solveButton.setBackground(new Color(80, 120, 255)); // Slightly darker blue on hover
+        solveButton.setPreferredSize(new Dimension(100, 40));
+        solveButton.setBackground(new Color(50, 150, 255)); // Blue background
+        solveButton.setForeground(Color.WHITE); // White text
+        solveButton.setFocusPainted(false); // Remove focus outline
+        solveButton.setFont(new Font("Arial", Font.PLAIN, 14)); // Set button font
+
+        // Add MouseListener for hover effect
+        solveButton.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                solveButton.setBackground(new Color(70, 180, 255)); // Lighter blue when hovered
             }
 
-            public void mouseExited(java.awt.event.MouseEvent evt) {
-                solveButton.setBackground(new Color(100, 150, 255)); // Original color when not hovered
+            @Override
+            public void mouseExited(MouseEvent e) {
+                solveButton.setBackground(new Color(50, 150, 255)); // Original blue when not hovered
             }
         });
 
-        add(solveButton, BorderLayout.CENTER);
-
-        // Result display
-        resultArea = new JTextArea(10, 30);
-        resultArea.setEditable(false);
-        resultArea.setFont(font); // Apply font to text area
-        add(new JScrollPane(resultArea), BorderLayout.SOUTH);
-
-        // Action listener
         solveButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 runColoring();
             }
         });
+        add(solveButton, BorderLayout.CENTER);
+
+        // Result display
+        resultArea = new JTextArea(10, 30);
+        resultArea.setEditable(false);
+        resultArea.setFont(new Font("Arial", Font.PLAIN, 14));
+        add(new JScrollPane(resultArea), BorderLayout.SOUTH);
     }
 
     private void runColoring() {
         try {
             int nodes = Integer.parseInt(nodeField.getText().trim());
             int colors = Integer.parseInt(colorField.getText().trim());
-    
+
             String[] rows = matrixInput.getText().trim().split("\n");
             int[][] graph = new int[nodes][nodes];
             for (int i = 0; i < nodes; i++) {
@@ -92,13 +100,13 @@ public class GraphColorPanel extends JPanel {
                 }
             }
 
-            if(!node_color_sorter.isValidGraph(graph)) {
+            if (!node_color_sorter.isValidGraph(graph)) {
                 throw new Exception("Invalid Graph: the adjacency matrix is not symmetric ");
             }
-    
+
             node_color_sorter sorter = new node_color_sorter(graph, colors);
             resultArea.setText("");
-    
+
             if (!sorter.solve(colors)) {
                 resultArea.append("No solution exists.\n");
             } else {
@@ -106,15 +114,19 @@ public class GraphColorPanel extends JPanel {
                 for (int i = 0; i < nodes; i++) {
                     resultArea.append("Node " + i + " --> Color " + assignedColors[i] + "\n");
                 }
-    
-                // Add drawing canvas below the result
+
+                // Add drawing canvas
                 JFrame canvasFrame = new JFrame("Graph Visualization");
                 canvasFrame.setContentPane(new GraphCanvas(graph, assignedColors));
                 canvasFrame.pack();
+
+                // Center the canvas frame on the screen
+                canvasFrame.setLocationRelativeTo(null); // This centers the frame
+
                 canvasFrame.setVisible(true);
             }
         } catch (Exception ex) {
             resultArea.setText("Error: Make sure all inputs are valid.\n");
         }
-    }    
+    }
 }
