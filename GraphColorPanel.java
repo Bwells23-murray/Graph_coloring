@@ -12,6 +12,8 @@ public class GraphColorPanel extends JPanel {
     private JTextArea matrixInput;
     private JTextArea resultArea;
 
+    private JFrame canvasFrame = null; // Track current graph window
+
     public GraphColorPanel() {
         setLayout(new BorderLayout());
 
@@ -116,14 +118,19 @@ public class GraphColorPanel extends JPanel {
                 }
 
                 // Add drawing canvas
-                JFrame canvasFrame = new JFrame("Graph Visualization");
+                // Close old canvas if it exists
+                if (canvasFrame != null && canvasFrame.isDisplayable()) {
+                    canvasFrame.dispose();
+                }
+
+                // Create new canvas window
+                canvasFrame = new JFrame("Graph Visualization");
+                canvasFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
                 canvasFrame.setContentPane(new GraphCanvas(graph, assignedColors));
                 canvasFrame.pack();
-
-                // Center the canvas frame on the screen
-                canvasFrame.setLocationRelativeTo(null); // This centers the frame
-
+                canvasFrame.setLocationRelativeTo(null); // Center on screen
                 canvasFrame.setVisible(true);
+
             }
         } catch (Exception ex) {
             resultArea.setText("Error: Make sure all inputs are valid.\n");

@@ -14,11 +14,23 @@ public class GraphCanvas extends JPanel {
             new Color(255, 186, 245) // Cotton Candy
     };
 
+    private int currentStep = 0; // Animation step counter
+    private Timer animationTimer;
+
     public GraphCanvas(int[][] graph, int[] colors) {
         this.graph = graph;
         this.colors = colors;
         setPreferredSize(new Dimension(600, 600));
         setBackground(Color.WHITE);
+
+        animationTimer = new Timer(500, e -> {
+            currentStep++;
+            if (currentStep > graph.length) {
+                animationTimer.stop();
+            }
+            repaint();
+        });
+        animationTimer.start();
     }
 
     @Override
@@ -26,7 +38,7 @@ public class GraphCanvas extends JPanel {
         super.paintComponent(g);
 
         Graphics2D g2 = (Graphics2D) g;
-        g2.setFont(new Font("Arial", Font.PLAIN, 14)); // Set font to Arial
+        g2.setFont(new Font("Arial", Font.PLAIN, 14));
 
         int n = graph.length;
         int radius = 20;
@@ -44,22 +56,28 @@ public class GraphCanvas extends JPanel {
         }
 
         // Draw edges
-    g2.setStroke(new BasicStroke(1.25f)); // Set line thickness
-    g.setColor(Color.BLACK);
-    for (int i = 0; i < n; i++) {
-        for (int j = i + 1; j < n; j++) {
-            if (graph[i][j] == 1) {
-                g.drawLine(nodePositions[i].x, nodePositions[i].y, nodePositions[j].x, nodePositions[j].y);
+        g2.setStroke(new BasicStroke(1.25f));
+        g.setColor(Color.BLACK);
+        for (int i = 0; i < n; i++) {
+            for (int j = i + 1; j < n; j++) {
+                if (graph[i][j] == 1) {
+                    g.drawLine(nodePositions[i].x, nodePositions[i].y, nodePositions[j].x, nodePositions[j].y);
+                }
             }
         }
-    }
 
-        // Draw nodes with assigned colors
+        // Draw nodes with animation up to currentStep
         for (int i = 0; i < n; i++) {
             int x = nodePositions[i].x - radius;
             int y = nodePositions[i].y - radius;
-            int colorIndex = (colors[i] - 1) % colorPalette.length;
-            g.setColor(colorPalette[colorIndex]);
+
+            if (i < currentStep) {
+                int colorIndex = (colors[i] - 1) % colorPalette.length;
+                g.setColor(colorPalette[colorIndex]);
+            } else {
+                g.setColor(Color.LIGHT_GRAY); // Not yet colored
+            }
+
             g.fillOval(x, y, 2 * radius, 2 * radius);
             g.setColor(Color.BLACK);
             g.drawOval(x, y, 2 * radius, 2 * radius);
