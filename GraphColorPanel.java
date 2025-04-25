@@ -13,14 +13,16 @@ public class GraphColorPanel extends JPanel {
     private JTextArea resultArea;
 
     private JFrame canvasFrame = null; // Track current graph window
+    private int[][] lastGraph = null;   // Stores last graph for replay
+    private int[] lastColors = null;    // Stores last coloring result
 
     public GraphColorPanel() {
         setLayout(new BorderLayout());
 
         // Top inputs
         JPanel inputPanel = new JPanel();
-        inputPanel.setLayout(new BoxLayout(inputPanel, BoxLayout.Y_AXIS)); // Use vertical layout for inputs
-        inputPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10)); // Padding around the panel
+        inputPanel.setLayout(new BoxLayout(inputPanel, BoxLayout.Y_AXIS));
+        inputPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
         // Node field
         JPanel nodePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -49,37 +51,96 @@ public class GraphColorPanel extends JPanel {
         matrixPanel.add(new JScrollPane(matrixInput));
         inputPanel.add(matrixPanel);
 
-        // Add the inputPanel to the top part
         add(inputPanel, BorderLayout.NORTH);
 
-        // Solve Button
+        // Buttons panel
         JButton solveButton = new JButton("Solve");
-        solveButton.setPreferredSize(new Dimension(100, 40));
-        solveButton.setBackground(new Color(50, 150, 255)); // Blue background
-        solveButton.setForeground(Color.WHITE); // White text
-        solveButton.setFocusPainted(false); // Remove focus outline
-        solveButton.setFont(new Font("Arial", Font.PLAIN, 14)); // Set button font
+        JButton resetButton = new JButton("Reset");
+        JButton replayButton = new JButton("Replay");
+        replayButton.setEnabled(false);
 
-        // Add MouseListener for hover effect
+        solveButton.setPreferredSize(new Dimension(100, 40));
+        solveButton.setBackground(new Color(50, 150, 255));
+        solveButton.setForeground(Color.WHITE);
+        solveButton.setFocusPainted(false);
+        solveButton.setFont(new Font("Arial", Font.PLAIN, 14));
         solveButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
-                solveButton.setBackground(new Color(70, 180, 255)); // Lighter blue when hovered
+                solveButton.setBackground(new Color(70, 180, 255));
             }
-
             @Override
             public void mouseExited(MouseEvent e) {
-                solveButton.setBackground(new Color(50, 150, 255)); // Original blue when not hovered
+                solveButton.setBackground(new Color(50, 150, 255));
             }
         });
-
         solveButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                runColoring();
+                runColoring(replayButton);
             }
         });
-        add(solveButton, BorderLayout.CENTER);
+
+        resetButton.setPreferredSize(new Dimension(100, 40));
+        resetButton.setBackground(new Color(220, 53, 69));
+        resetButton.setForeground(Color.WHITE);
+        resetButton.setFocusPainted(false);
+        resetButton.setFont(new Font("Arial", Font.PLAIN, 14));
+        resetButton.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                resetButton.setBackground(new Color(255, 80, 95));
+            }
+            @Override
+            public void mouseExited(MouseEvent e) {
+                resetButton.setBackground(new Color(220, 53, 69));
+            }
+        });
+        resetButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                resetFields();
+                replayButton.setEnabled(false);
+            }
+        });
+
+        replayButton.setPreferredSize(new Dimension(100, 40));
+        replayButton.setBackground(new Color(100, 200, 100));
+        replayButton.setForeground(Color.WHITE);
+        replayButton.setFocusPainted(false);
+        replayButton.setFont(new Font("Arial", Font.PLAIN, 14));
+        replayButton.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                if (replayButton.isEnabled()) replayButton.setBackground(new Color(120, 220, 120));
+            }
+            @Override
+            public void mouseExited(MouseEvent e) {
+                if (replayButton.isEnabled()) replayButton.setBackground(new Color(100, 200, 100));
+            }
+        });
+        replayButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (lastGraph != null && lastColors != null) {
+                    if (canvasFrame != null && canvasFrame.isDisplayable()) {
+                        canvasFrame.dispose();
+                    }
+                    canvasFrame = new JFrame("Graph Visualization");
+                    canvasFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+                    canvasFrame.setContentPane(new GraphCanvas(lastGraph, lastColors));
+                    canvasFrame.pack();
+                    canvasFrame.setLocationRelativeTo(null);
+                    canvasFrame.setVisible(true);
+                }
+            }
+        });
+
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
+        buttonPanel.add(solveButton);
+        buttonPanel.add(resetButton);
+        buttonPanel.add(replayButton);
+        add(buttonPanel, BorderLayout.CENTER);
 
         // Result display
         resultArea = new JTextArea(10, 30);
@@ -88,7 +149,7 @@ public class GraphColorPanel extends JPanel {
         add(new JScrollPane(resultArea), BorderLayout.SOUTH);
     }
 
-    private void runColoring() {
+    private void runColoring(JButton replayButton) {
         try {
             int nodes = Integer.parseInt(nodeField.getText().trim());
             int colors = Integer.parseInt(colorField.getText().trim());
@@ -103,7 +164,7 @@ public class GraphColorPanel extends JPanel {
             }
 
             if (!node_color_sorter.isValidGraph(graph)) {
-                throw new Exception("Invalid Graph: the adjacency matrix is not symmetric ");
+                throw new Exception("Invalid Graph: the adjacency matrix is not symmetric.");
             }
 
             node_color_sorter sorter = new node_color_sorter(graph, colors);
@@ -111,29 +172,43 @@ public class GraphColorPanel extends JPanel {
 
             if (!sorter.solve(colors)) {
                 resultArea.append("No solution exists.\n");
+                replayButton.setEnabled(false);
             } else {
                 int[] assignedColors = sorter.getColors();
                 for (int i = 0; i < nodes; i++) {
                     resultArea.append("Node " + i + " --> Color " + assignedColors[i] + "\n");
                 }
 
-                // Add drawing canvas
-                // Close old canvas if it exists
+                lastGraph = graph;
+                lastColors = assignedColors;
+                replayButton.setEnabled(true);
+
                 if (canvasFrame != null && canvasFrame.isDisplayable()) {
                     canvasFrame.dispose();
                 }
 
-                // Create new canvas window
                 canvasFrame = new JFrame("Graph Visualization");
                 canvasFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
                 canvasFrame.setContentPane(new GraphCanvas(graph, assignedColors));
                 canvasFrame.pack();
-                canvasFrame.setLocationRelativeTo(null); // Center on screen
+                canvasFrame.setLocationRelativeTo(null);
                 canvasFrame.setVisible(true);
-
             }
         } catch (Exception ex) {
             resultArea.setText("Error: Make sure all inputs are valid.\n");
+            replayButton.setEnabled(false);
+        }
+    }
+
+    private void resetFields() {
+        nodeField.setText("");
+        colorField.setText("");
+        matrixInput.setText("");
+        resultArea.setText("");
+
+        if (canvasFrame != null && canvasFrame.isDisplayable()) {
+            canvasFrame.dispose();
+            canvasFrame = null;
         }
     }
 }
