@@ -1,10 +1,20 @@
-import javax.swing.*;
-import java.awt.*;
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Point;
 
-public class GraphCanvas extends JPanel {
+import javax.swing.JPanel;
+import javax.swing.Timer;
+
+public class GraphCanvas extends JPanel 
+{
     private int[][] graph;
     private int[] colors;
-    private final Color[] colorPalette = new Color[] {
+    private final Color[] colorPalette = new Color[] 
+    {
             new Color(255, 179, 186), // Baby Pink
             new Color(255, 223, 186), // Peach
             new Color(255, 255, 186), // Lemon
