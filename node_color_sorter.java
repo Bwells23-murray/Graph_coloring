@@ -1,3 +1,4 @@
+//jahzara, brooklyn,alana
 import java.util.Scanner;
 
 public class node_color_sorter {
